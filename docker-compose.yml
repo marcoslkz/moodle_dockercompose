@@ -20,7 +20,7 @@ services:
     volumes:
       - moodledata:/var/moodledata
     restart: unless-stopped
-    network: 
+    networks: 
       - proxy_default
 
 volumes:
