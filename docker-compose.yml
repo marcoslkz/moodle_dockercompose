@@ -5,11 +5,28 @@ version: '3'
 
 services:
   webserver:
-    image: moodlehq/moodle-php-apache:8.2-bullseye
+    #image: moodlehq/moodle-php-apache:8.2-bullseye
+    image: docker.io/bitnami/moodle:4.2
     container_name: "moodle_${SITE_PATH}"
     environment:
       - DOMAIN_NAME
       - SITE_PATH
+      - PHP_MEMORY_LIMIT
+      - PHP_POST_MAX_SIZE
+      - PHP_UPLOAD_MAX_FILESIZE
+      - MOODLE_HOST=${DOMAIN_NAME}
+      - MOODLE_REVERSEPROXY=true
+      - MOODLE_SSLPROXY=true
+      - MOODLE_DATABASE_PORT_NUMBER=3306
+      - MOODLE_DATABASE_USER=${SITE_PATH}
+      - MOODLE_DATABASE_NAME=${SITE_PATH}
+      - MOODLE_DATABASE_HOST
+      - MOODLE_DATABASE_PASSWORD
+      - MOODLE_SKIP_BOOTSTRAP=no
+      - MOODLE_USERNAME
+      - MOODLE_PASSWORD
+      - MOODLE_EMAIL
+      - MOODLE_LANG
     labels:
       - traefik.enable=true
       - traefik.http.services.moodle_${SITE_PATH}.loadbalancer.server.port=80
@@ -19,29 +36,16 @@ services:
       - traefik.http.middlewares.moodle_${SITE_PATH}.stripprefix.prefixes=/${SITE_PATH}    
       - traefik.http.middlewares.moodle_${SITE_PATH}.stripprefix.forceslash=true
       - traefik.http.routers.moodle_${SITE_PATH}.middlewares=moodle_${SITE_PATH}
-     
-      
-      
- 
-
-
-
-
-
-
-
-
-      
-
-      
     volumes:
-      - moodledata:/var/moodledata
+      - 'moodle_data:/bitnami/moodle'
+      - 'moodledata_data:/bitnami/moodledata'
     restart: unless-stopped
     networks: 
       - proxy_default
 
 volumes:
-  moodledata:
+  moodle_data:
+  moodledata_data:
 
 networks:
   proxy_default:
