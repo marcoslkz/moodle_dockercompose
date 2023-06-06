@@ -6,7 +6,7 @@ version: '3'
 services:
   webserver:
     #image: moodlehq/moodle-php-apache:8.2-bullseye
-    image: docker.io/bitnami/moodle:4.2
+    image: docker.io/bitnami/moodle:4.1
     container_name: "moodle_${SITE_PATH}"
     environment:
       - DOMAIN_NAME
