@@ -37,7 +37,7 @@ services:
       - traefik.http.middlewares.moodle_${SITE_PATH}.stripprefix.forceslash=true
       - traefik.http.routers.moodle_${SITE_PATH}.middlewares=moodle_${SITE_PATH}
     volumes:
-      - 'moodledata_data:/bitnami/moodledata'
+      - 'moodledata:/bitnami/moodledata'
     restart: unless-stopped
     networks: 
       - proxy_default
