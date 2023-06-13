@@ -1,10 +1,12 @@
-# set .env vars: DOMAIN_NAME , SITE_PATH
+# set .env vars: TZ, DOMAIN_NAME , SITE_PATH
+#      - MOODLE_DATABASE_USER, MOODLE_DATABASE_HOST, MOODLE_DATABASE_PASSWORD, MOODLE_USERNAME
+#      - MOODLE_PASSWORD, MOODLE_EMAIL, MOODLE_LANG
 
-version: '3.8'
+version: '3'
 
 services:
   mariadb:
-    image: docker.io/bitnami/mariadb:10.6
+    image: docker.io/bitnami/mariadb:latest
     container_name: "mariadb"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
@@ -36,11 +38,11 @@ services:
       - PHP_POST_MAX_SIZE
       - PHP_UPLOAD_MAX_FILESIZE
       - PHP_MEMORY_LIMIT=256M
-      - MOODLE_HOST=${DOMAIN_NAME}/${SITE_PATH}
+      - MOODLE_HOST="https://${DOMAIN_NAME}/${SITE_PATH}"
       - MOODLE_SSLPROXY=true
       - MOODLE_DATABASE_PORT_NUMBER=3306
-      - MOODLE_DATABASE_USER
       - MOODLE_DATABASE_NAME=${SITE_PATH}
+      - MOODLE_DATABASE_USER
       - MOODLE_DATABASE_HOST
       - MOODLE_DATABASE_PASSWORD
       - MOODLE_USERNAME
