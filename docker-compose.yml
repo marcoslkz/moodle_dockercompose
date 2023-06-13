@@ -1,50 +1,86 @@
-# https://hub.docker.com/r/moodlehq/moodle-php-apache/
 # set .env vars: DOMAIN_NAME , SITE_PATH
 
-version: '3'
+version: '3.8'
 
 services:
+  mariadb:
+    image: docker.io/bitnami/mariadb:10.6
+    container_name: "mariadb"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - MARIADB_RANDOM_ROOT_PASSWORD=yes
+      - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=yes
+      - MARIADB_USER=${MOODLE_DATABASE_USER}
+      - MARIADB_PASSWORD=${MOODLE_DATABASE_PASSWORD}
+      - MARIADB_DATABASE=${SITE_PATH}
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - 'mariadb_data:/bitnami/mariadb'
+    networks: 
+      - mariadb
+                        
   webserver:
     #image: moodlehq/moodle-php-apache:8.2-bullseye
-    image: docker.io/bitnami/moodle:4.1
+    image: docker.io/bitnami/moodle:4.2
     container_name: "moodle_${SITE_PATH}"
     environment:
+      - TZ
       - DOMAIN_NAME
       - SITE_PATH
-      - PHP_MEMORY_LIMIT
       - PHP_POST_MAX_SIZE
       - PHP_UPLOAD_MAX_FILESIZE
-      - MOODLE_HOST=${DOMAIN_NAME}
-      - MOODLE_REVERSEPROXY=true
+      - PHP_MEMORY_LIMIT=256M
+      - MOODLE_HOST=${DOMAIN_NAME}/${SITE_PATH}
       - MOODLE_SSLPROXY=true
       - MOODLE_DATABASE_PORT_NUMBER=3306
       - MOODLE_DATABASE_USER
       - MOODLE_DATABASE_NAME=${SITE_PATH}
       - MOODLE_DATABASE_HOST
       - MOODLE_DATABASE_PASSWORD
-      - MOODLE_SKIP_BOOTSTRAP=no
       - MOODLE_USERNAME
       - MOODLE_PASSWORD
       - MOODLE_EMAIL
       - MOODLE_LANG
+      - MOODLE_SKIP_BOOTSTRAP=no
     labels:
       - traefik.enable=true
-      - traefik.http.services.moodle_${SITE_PATH}.loadbalancer.server.port=80
+      - traefik.http.services.moodle_${SITE_PATH}.loadbalancer.server.port=8080
       - traefik.http.routers.moodle_${SITE_PATH}.tls.certresolver=letsencrypt
       - traefik.frontend.entryPoints=http,https
       - traefik.http.routers.moodle_${SITE_PATH}.rule=Host(`${DOMAIN_NAME}`) && ( PathPrefix(`/${SITE_PATH}`) )
-      - traefik.http.middlewares.moodle_${SITE_PATH}.stripprefix.prefixes=/${SITE_PATH}    
-      - traefik.http.middlewares.moodle_${SITE_PATH}.stripprefix.forceslash=true
-      - traefik.http.routers.moodle_${SITE_PATH}.middlewares=moodle_${SITE_PATH}
     volumes:
       - 'moodledata:/bitnami/moodledata'
+      - 'moodle_www:/bitnami/moodle'
     restart: unless-stopped
     networks: 
       - proxy_default
+      - mariadb
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  alias:
+    image: docker.io/bitnami/moodle:4.2
+    container_name: "alias_${SITE_PATH}"
+    volumes:
+      - 'moodle_www:/bitnami/moodle'
+    command: bash -c "sleep 120s ; ln -fs /bitnami/moodle/ /bitnami/moodle/${SITE_PATH}"
+    depends_on:
+      - webserver
+    
 
 volumes:
+  mariadb_data:
   moodledata:
-
+  moodle_www:
+  
 networks:
   proxy_default:
     external: true
+  mariadb:
