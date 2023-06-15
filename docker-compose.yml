@@ -9,6 +9,7 @@ services:
     image: docker.io/bitnami/mariadb:latest
     container_name: "mariadb"
     environment:
+      - TZ
       - ALLOW_EMPTY_PASSWORD=yes
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=yes
