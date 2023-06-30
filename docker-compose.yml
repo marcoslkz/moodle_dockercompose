@@ -8,6 +8,7 @@ services:
   mariadb:
     image: docker.io/bitnami/mariadb:latest
     container_name: "mariadb"
+    restart: unless-stopped
     environment:
       - TZ
       - ALLOW_EMPTY_PASSWORD=yes
@@ -32,6 +33,7 @@ services:
     #image: moodlehq/moodle-php-apache:8.2-bullseye
     image: docker.io/bitnami/moodle:4.2
     container_name: "moodle_${SITE_PATH}"
+    restart: unless-stopped
     environment:
       - TZ
       - DOMAIN_NAME
@@ -60,7 +62,6 @@ services:
     volumes:
       - 'moodledata:/bitnami/moodledata'
       - 'moodle_www:/bitnami/moodle'
-    restart: unless-stopped
     networks: 
       - proxy_default
       - mariadb
