@@ -62,6 +62,7 @@ services:
     volumes:
       - 'moodledata:/bitnami/moodledata'
       - 'moodle_www:/bitnami/moodle'
+      - 'moodle_www:/bitnami/moodle/${SITE_PATH}'
     networks: 
       - proxy_default
       - mariadb
@@ -70,11 +71,12 @@ services:
         condition: service_healthy
 
   alias:
-    image: docker.io/bitnami/moodle:4.2
+    image: alpine
     container_name: "alias_${SITE_PATH}"
     volumes:
       - 'moodle_www:/bitnami/moodle'
-    command: bash -c "sleep 120s ; ln -fs /bitnami/moodle/ /bitnami/moodle/${SITE_PATH}"
+    #command: bash -c "sleep 120s ; ln -fs /bitnami/moodle/ /bitnami/moodle/${SITE_PATH}"
+    command: bash -c "sleep 120s"
     depends_on:
       - webserver
     
